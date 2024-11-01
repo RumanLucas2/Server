@@ -11,8 +11,9 @@ public class Parceiro {
     private ObjectInputStream receptor;
     private ObjectOutputStream transmissor;
 
-    private Comunicado proximoComunicado = null;
-    private Semaphore mutEx = new Semaphore(1, true);
+
+    private String proximoComunicado = null;
+    private final Semaphore mutEx = new Semaphore(1, true);
 
     public Parceiro(Socket conexao, ObjectInputStream receptor, ObjectOutputStream transmissor) throws Exception {
         if (conexao == null)
@@ -29,7 +30,8 @@ public class Parceiro {
         this.transmissor = transmissor;
     }
 
-    public void receba(Comunicado x) throws Exception {
+
+    public void envie(String x) throws Exception {
         try {
             this.transmissor.writeObject(x);
             this.transmissor.flush();
@@ -38,10 +40,11 @@ public class Parceiro {
         }
     }
 
-    public Comunicado espie() throws Exception {
+    public String espie() throws Exception {
         try {
             this.mutEx.acquireUninterruptibly();
-            this.proximoComunicado = (Comunicado) this.receptor.readObject();
+            this.proximoComunicado =  this.receptor.readObject().toString();
+            System.out.println(this.proximoComunicado);
             this.mutEx.release();
             return this.proximoComunicado;
         } catch (Exception erro) {
@@ -50,10 +53,10 @@ public class Parceiro {
     }
 
 
-    public Comunicado envie() throws Exception {
+    public String receba() throws Exception {
         try {
-            if (this.proximoComunicado == null) this.proximoComunicado = (Comunicado) this.receptor.readObject();
-            Comunicado ret = this.proximoComunicado;
+            if (this.proximoComunicado == null) this.proximoComunicado = this.receptor.readObject().toString();
+            String ret = this.proximoComunicado;
             this.proximoComunicado = null;
             return ret;
         } catch (Exception erro) {

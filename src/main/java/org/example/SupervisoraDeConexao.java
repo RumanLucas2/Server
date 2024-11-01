@@ -1,16 +1,26 @@
 package org.example;
 
+import com.sun.source.util.TaskEvent;
+import com.sun.source.util.TaskListener;
+
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.net.StandardSocketOptions;
 import java.util.ArrayList;
+import java.util.concurrent.CompletableFuture;
 
 
 public class SupervisoraDeConexao extends Thread {
-    private double valor = 0;
     private Parceiro usuario;
-    private Socket conexao;
-    private ArrayList<Parceiro> usuarios;
+    private final Socket conexao;
+    private final ArrayList<Parceiro> usuarios;
+    private static ArrayList<String> Commands;
+
+
+    public static void addCommands(String value){
+        Commands.add(value);
+    }
 
     public SupervisoraDeConexao(Socket conexao, ArrayList<Parceiro> usuarios) throws Exception {
         if (conexao == null)
@@ -21,10 +31,11 @@ public class SupervisoraDeConexao extends Thread {
 
         this.conexao = conexao;
         this.usuarios = usuarios;
+        Commands = new ArrayList<String>();
     }
 
+    @Override
     public void run() {
-
 
         ObjectOutputStream transmissor;
         try {
@@ -40,6 +51,7 @@ public class SupervisoraDeConexao extends Thread {
             try {
                 transmissor.close();
             } catch (Exception falha) {
+                System.err.println("Falha total");
             }
 
             return;
@@ -48,30 +60,49 @@ public class SupervisoraDeConexao extends Thread {
         try {
             this.usuario = new Parceiro(this.conexao, receptor, transmissor);
         } catch (Exception erro) {
+            System.err.println("erro no parceiro");
         }
-
         try {
             synchronized (this.usuarios) {
                 this.usuarios.add(this.usuario);
             }
-
             for (; ; ) {
-
-                Sensor sensor = new Sensor("Sensor");
-                double dadoDoSensor = sensor.lerDado();
-                this.usuario.receba(new DadoDoSensor(sensor, dadoDoSensor));
-
-                // Delay de 1 segundo para enviar o proximo dado
-                Thread.sleep(10000);
+                CompletableFuture<Void> assyncVar = CompletableFuture.runAsync(() -> {
+                    if (!Commands.get(0).isEmpty()){
+                        String cmd = Commands.get(0);
+                        Commands.remove(0);
+                        assyncMethod(cmd);
+                    }
+                });
+                new Sensor();
             }
         } catch (Exception erro) {
             try {
                 transmissor.close();
                 receptor.close();
             } catch (Exception falha) {
+                throw new RuntimeException(falha);
             }
+        }
+    }
 
-            return;
+
+    private void assyncMethod(String cmd){
+            try {
+                command(cmd);
+            } catch (Exception e) {
+                System.err.println("Erro aqui");
+            }
+            // Espera a conclusão do processo assíncrono
+    }
+
+    private void command(String cmd){
+        try{
+            usuario.envie(cmd);
+            Thread.sleep(1000);
+            System.out.println(usuario.receba());
+        }catch (Exception e){
+            System.err.println("Dado nao enviado");
         }
     }
 }

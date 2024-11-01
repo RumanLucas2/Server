@@ -11,7 +11,7 @@ import org.bson.Document;
 
 public class Cliente {
     public static final String HOST_PADRAO = "localhost";
-    public static final int PORTA_PADRAO = 8000;
+    public static final int PORTA_PADRAO = 8080;
 
     public static void main(String[] args) {
         if (args.length > 2) {
@@ -59,35 +59,34 @@ public class Cliente {
             System.err.println("Indique o servidor e a porta corretos!\n");
             return;
         }
-
-        do {
-            try {
+        try {
+            while (servidor.getStatus()) {
                 // recebendo automaticamente dados do (sensor)
-                Comunicado comunicado = (Comunicado) servidor.espie();
-
-                if (comunicado instanceof DadoDoSensor) {
-                    DadoDoSensor dadoDoSensor = (DadoDoSensor) comunicado;
-
-                    try (MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017")) {
-                        MongoDatabase database = mongoClient.getDatabase("projetoRP");
-                        MongoCollection<Document> collection = database.getCollection("sensor");
-                        Document document = new Document("dado", dadoDoSensor.getDado())
-                                .append("timestamp", System.currentTimeMillis());
-                        collection.insertOne(document);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                   // System.out.println("Dado do Sensor " + dadoDoSensor.getSensor().getNome() + ": " + dadoDoSensor.getDado());
-
+                System.out.println("Its Working");
+                String command = servidor.receba();
+                //System.out.println(servidor.receba());
+                if (command.equals("status")){
+                    servidor.envie("Online");
                 }
-
-            } catch (Exception erro) {
-                System.err.println("Erro de comunicacao com o servidor;");
-                System.err.println("Tente novamente!");
-                System.err.println("Caso o erro persista, termine o programa");
-                System.err.println("e volte a tentar mais tarde!\n");
+//                if (comunicado instanceof DadoDoSensor dadoDoSensor) {
+//
+//                    try (MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017")) {
+//                        MongoDatabase database = mongoClient.getDatabase("projetoRP");
+//                        MongoCollection<Document> collection = database.getCollection("sensor");
+//                        Document document = new Document("dado", dadoDoSensor.getDado())
+//                                .append("timestamp", System.currentTimeMillis());
+//                        collection.insertOne(document);
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    }//
+//                }
             }
-        } while (true);
-
+            System.out.println("Status is offline for some reason");
+        } catch (Exception erro) {
+            System.err.println("Erro de comunicacao com o servidor;");
+            System.err.println("Tente novamente!");
+            System.err.println("Caso o erro persista, termine o programa");
+            System.err.println("e volte a tentar mais tarde!\n");
+        }
     }
 }

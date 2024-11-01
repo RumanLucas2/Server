@@ -5,8 +5,8 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 public class AceitadoraDeConexao extends Thread {
-    private ServerSocket pedido;
-    private ArrayList<Parceiro> usuarios;
+    private final ServerSocket pedido;
+    private final ArrayList<Parceiro> usuarios;
 
     public AceitadoraDeConexao(String porta, ArrayList<Parceiro> usuarios) throws Exception {
         if (porta == null)
@@ -23,22 +23,27 @@ public class AceitadoraDeConexao extends Thread {
 
         this.usuarios = usuarios;
     }
-
+    @Override
     public void run() {
-        for (; ; ) {
-            Socket conexao = null;
-            try {
-                conexao = this.pedido.accept();
-            } catch (Exception erro) {
-                continue;
-            }
+        System.out.println("Tentando conexao");
 
-            SupervisoraDeConexao supervisoraDeConexao = null;
-            try {
-                supervisoraDeConexao = new SupervisoraDeConexao(conexao, usuarios);
-            } catch (Exception erro) {
-            }
-            supervisoraDeConexao.start();
+        Socket conexao = null;
+        try {
+            conexao = this.pedido.accept();
+            System.out.println("Pedido Aceito");
+        } catch (Exception erro) {
+            System.err.println("Err no aceitamento");
         }
+
+        SupervisoraDeConexao supervisoraDeConexao = null;
+        try {
+            supervisoraDeConexao = new SupervisoraDeConexao(conexao, usuarios);
+            System.out.println("Supervisora Iniciada");
+        } catch (Exception ignored) {
+            System.err.println("Err na Inicializacao da Supervisora");
+        }
+        System.out.println("Iniciando Supervisora.Start()");
+        assert supervisoraDeConexao != null;
+        supervisoraDeConexao.start();
     }
 }
