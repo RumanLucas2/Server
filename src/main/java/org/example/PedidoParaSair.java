@@ -1,4 +1,5 @@
 package org.example;
 
-public class PedidoParaSair extends Comunicado
-{}
+import java.io.Serializable;
+
+public class PedidoParaSair implements Serializable, Cloneable {}

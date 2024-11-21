@@ -9,63 +9,15 @@ public class Sensor implements Serializable {
         Command();
     }
 
-    public String getNome() {
-        return nome;
-    }
-
-    public enum Server
-    {
-        Terminate{
-            @Override
-            public void execute(){
-                Servidor.Terminate();
-            }
-        },
-        Start{
-            @Override
-            public void execute() {
-                Servidor.Start();
-            }
-        },
-
-        Status{
-            @Override
-            public void execute(){
-                SupervisoraDeConexao.addCommands("status");
-            }
-        };
-        public abstract void execute();
-    }
-
-    public enum DB
-    {;
-        public enum Get{
-            GET();
-
-            public static String execute(String obj){
-                return obj;
-            }
-
-        };
-
-        public enum Post {
-            POST();
-            public static boolean execute (Object obj){
-                return true;
-            }
-        };
-        public void end(){}
-    }
-
     private static void Command(){
-        System.out.println("Ready to Load");
+        System.out.println("Insert new command");
         String comando = Teclado.getUmString();
         if (comando.contains("Server")) {
             TryServer(comando);
         } else if (comando.contains("DB")) {
             TryDB(comando);
         } else if (comando.equalsIgnoreCase("end")){
-            System.exit(0);
+            SupervisoraDeConexao.addCommands("end");
         }else {
             System.out.println("Invalid Command");
         }
@@ -74,24 +26,18 @@ public class Sensor implements Serializable {
     private static void TryServer(String command){
         command = command.replace("Server ", "");
         try{
-            Sensor.Server.valueOf(command).execute();
+            ServerCommand.valueOf(command).execute();
         }catch(Exception e) {
             System.out.println("Command not valid: " +command);
         }
     }
 
     private static void TryDB(String command){
-        command = command.replace("DB ", "");
-        if (command.contains("Get")){
-            command = command.replace("Get ", "");
-            String dado = Sensor.DB.Get.execute(command);
-            System.out.println(dado);
+        var cmd = command.replace("DB ", "");
+        if(DB.exists(cmd)){
+            DB.valueOf(cmd.split(" ")[0]).execute(command.replace("DB ", ""));
+        }else{
+            System.err.println("Command not found:" + command);
         }
-        if (command.contains("Post")){
-            command = command.replace("Post ", "");
-            String dado = "" +Sensor.DB.Post.execute(command);
-            System.out.println(dado);
-        }
-
     }
 }

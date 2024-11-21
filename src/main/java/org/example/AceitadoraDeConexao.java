@@ -1,18 +1,19 @@
 package org.example;
 
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 
 public class AceitadoraDeConexao extends Thread {
-    private final ServerSocket pedido;
+    private ServerSocket pedido = new ServerSocket();
     private final ArrayList<Parceiro> usuarios;
 
     public AceitadoraDeConexao(String porta, ArrayList<Parceiro> usuarios) throws Exception {
         if (porta == null)
             throw new Exception("Porta ausente");
-
         try {
+            assert pedido == null;
             this.pedido = new ServerSocket(Integer.parseInt(porta));
         } catch (Exception erro) {
             throw new Exception("Porta invalida");
@@ -20,7 +21,6 @@ public class AceitadoraDeConexao extends Thread {
 
         if (usuarios == null)
             throw new Exception("Usuarios ausentes");
-
         this.usuarios = usuarios;
     }
     @Override
@@ -30,6 +30,7 @@ public class AceitadoraDeConexao extends Thread {
         Socket conexao = null;
         try {
             conexao = this.pedido.accept();
+            pedido.close();
             System.out.println("Pedido Aceito");
         } catch (Exception erro) {
             System.err.println("Err no aceitamento");
@@ -45,5 +46,6 @@ public class AceitadoraDeConexao extends Thread {
         System.out.println("Iniciando Supervisora.Start()");
         assert supervisoraDeConexao != null;
         supervisoraDeConexao.start();
+
     }
 }
