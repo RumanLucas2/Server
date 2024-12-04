@@ -1,11 +1,11 @@
 package org.example;
 
-import javax.swing.filechooser.FileView;
+import com.mongodb.lang.Nullable;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.concurrent.Semaphore;
 
 public class Parceiro {
     private final Socket conexao;
@@ -13,32 +13,41 @@ public class Parceiro {
     private final ObjectOutputStream transmissor;
     private String proximoComunicado = null;
 
-    private final boolean FileView;
+    private boolean SenderOnly = false;
+    private boolean ReceiverOnly = false;
 
-    public boolean isFileView(){
-        return FileView;
+    public boolean IsSenderOnly(){
+        return SenderOnly;
     }
-    public Parceiro(Socket conexao, ObjectInputStream receptor, ObjectOutputStream transmissor) throws Exception {
+
+    public boolean IsReceiverOnly(){
+        return ReceiverOnly;
+    }
+    public Parceiro(Socket conexao, @Nullable ObjectInputStream receptor, @Nullable ObjectOutputStream transmissor) throws Exception {
         if (conexao == null)
             throw new Exception("Conexao ausente");
         this.conexao = conexao;
 
-        if (transmissor == null)
-            throw new Exception("Transmissor ausente");
-        this.transmissor = transmissor;
+        if (! (transmissor == null)){
+            this.transmissor = transmissor;
+        }else {
+            System.err.println("Receptor Ausente, inicializando como Transmissor");
+            this.transmissor = null;
+            SenderOnly = true;
+        }
 
         if (! (receptor == null)){
             this.receptor = receptor;
-            FileView = false;
         }else {
             System.err.println("Receptor Ausente, inicializando como Transmissor");
             this.receptor = null;
-            FileView = true;
+            ReceiverOnly = true;
         }
     }
 
 
     public void envie(String x) throws Exception {
+        if (ReceiverOnly) throw new Exception("Este apenas recebe dados");
         try {
             this.transmissor.writeObject(x);
             this.transmissor.flush();
@@ -47,7 +56,7 @@ public class Parceiro {
         }
     }
     public String receba() throws Exception {
-        if (FileView) throw new Exception("Observer only");
+        if (SenderOnly) throw new Exception("Este apenas envia dados");
         try {
             if (this.proximoComunicado == null) this.proximoComunicado = this.receptor.readObject().toString();
             String ret = this.proximoComunicado;

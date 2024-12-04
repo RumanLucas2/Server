@@ -2,15 +2,15 @@ package org.example;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.*;
 
 
 public class Cliente {
 
+    public static final File path = new File("Arquivo.json");
     public static final String HOST_PADRAO = "localhost";
     public static final int PORTA_PADRAO = 8080;
     private static Parceiro servidor = null;
-    private static final Map<String, String> Arquivos = new HashMap<>();
+    private static Parceiro saida = null;
 
 
     public static void main(String[] args) throws IOException {
@@ -18,7 +18,7 @@ public class Cliente {
             System.err.println("Uso esperado: java Cliente [HOST [PORTA]]\n");
             return;
         }
-
+        Socket conn = null;
         Socket conexao = null;
         try {
             String host = Cliente.HOST_PADRAO;
@@ -31,22 +31,7 @@ public class Cliente {
                 porta = Integer.parseInt(args[1]);
 
             conexao = new Socket(host, porta);
-        } catch (Exception erro) {
-            System.err.println("Indique o servidor e a porta corretos!\n");
-            return;
-        }
-
-        ObjectOutputStream transmissor = null;
-        try {
-            transmissor = new ObjectOutputStream(conexao.getOutputStream());
-        } catch (Exception erro) {
-            System.err.println("Indique o servidor e a porta corretos!\n");
-            return;
-        }
-
-        ObjectInputStream receptor = null;
-        try {
-            receptor = new ObjectInputStream(conexao.getInputStream());
+            conn = new Socket(host, porta+1);
         } catch (Exception erro) {
             System.err.println("Indique o servidor e a porta corretos!\n");
             return;
@@ -54,7 +39,9 @@ public class Cliente {
 
 
         try {
-            servidor = new Parceiro(conexao, receptor, transmissor);
+            servidor = new Parceiro(conexao, new ObjectInputStream(conexao.getInputStream()), null); //apenas recebe
+            saida = new Parceiro(conn, null, new ObjectOutputStream(conn.getOutputStream()));// apenas envia
+
         } catch (Exception erro) {
             System.err.println("Indique o servidor e a porta corretos!\n");
             return;
@@ -65,9 +52,7 @@ public class Cliente {
                 String command = servidor.receba();
 
                 if (command.equals("status")) {
-                    servidor.envie("Online");
-                } else if (command.equals("list")) {
-                    servidor.envie(Cliente.listarArquivos());
+                    saida.envie("Online");
                 } else {
                     testCommands(command);
                 }
@@ -77,63 +62,14 @@ public class Cliente {
         }
     }
 
-    private static String listarArquivos() {
-        File diretorio = new File(Cliente.Diretorio);
-        StringBuilder lista = new StringBuilder();
-
-        if (diretorio.exists() && diretorio.isDirectory()) {
-            File[] arquivos = diretorio.listFiles((dir, nome) -> nome.toLowerCase().endsWith(".json"));
-            if (arquivos != null && arquivos.length > 0) {
-                for (File arquivo : arquivos) {
-                    lista.append(arquivo.getAbsolutePath()).append("\n");
-                }
-            } else {
-                lista.append("Nenhum arquivo JSON encontrado no diretório.");
-            }
-        } else {
-            lista.append("Diretório não encontrado.");
-        }
-        return lista.toString();
-    }
-
-    private static String criarArquivoJson(String nomeArquivo, String conteudo) {
-        // Define o diretório onde os arquivos JSON serão salvos
-        final String DIRETORIO_ARQUIVOS = "arquivos";
-
-        // Verifica se o nome do arquivo termina com ".json"
-        if (!nomeArquivo.endsWith(".json")) {
-            nomeArquivo += ".json";
-        }
-
-        // Define o caminho completo do arquivo no diretório especificado
-        File diretorio = new File(DIRETORIO_ARQUIVOS);
-        if (!diretorio.exists()) {
-            diretorio.mkdirs(); // Cria o diretório se ele não existir
-        }
-
-        File arquivo = new File(diretorio, nomeArquivo);
-
-        // Escreve o conteúdo JSON no arquivo
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(arquivo))) {
-            writer.write(conteudo);
-            return "Arquivo JSON '" + arquivo.getAbsolutePath() + "' criado com sucesso.";
-        } catch (IOException e) {
-            return "Erro ao criar o arquivo JSON: " + e.getMessage();
-        }
-    }
-
-    private static String criarArquivoJson(String nomeArquivo) {
-        return criarArquivoJson(nomeArquivo, "");
-    }
-
     public static void testCommands(String cmd){
         cmd = cmd.replace("DB ", "");
         String[] command = cmd.split(" ");
         if(DB.exists(command[0])){
             try {
-                servidor.envie(DB.valueOf(command[0]).execute(cmd.replace(command[0]+" ", "")));
+                saida.envie(DB.valueOf(command[0]).execute(cmd.replace(command[0]+" ", "")).toString());
             }catch (Exception e){
-                System.err.println(e);
+                System.err.println(e.getMessage());
             }
         }
     }

@@ -7,6 +7,8 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.lang.Nullable;
 import org.bson.Document;
 
+import javax.swing.*;
+
 /**
  * Enum of {@link java.lang.reflect.Method Methods} that execute a Database command
  */
@@ -25,9 +27,38 @@ public enum DB{
             return null;
         }
     },
+
+    GetT{
+        /**
+         * @param obj {@link String}
+         * @return returns <a style="color : #00ccff">null</a>  if success! <br>
+         * returns the <a style="color: #ff0000">error message</a> if failed!
+         */
+        @Override
+        public @Nullable String execute(String obj){
+            return null;
+        }
+    },
     /**
      * Execute Post Method
      */
+    Insert{
+        /**
+         * @param obj {@link String}
+         * @return returns <a style="color : #00ccff">null</a>  if success! <br>
+         * returns the <a style="color: #ff0000">error message</a> if failed!
+         */
+        @Override
+        public Object execute(String obj) throws Exception {
+            try{
+                Document document = new Document("dado", obj).append("timestamp", System.currentTimeMillis());
+                collection.insertOne(document);
+            }catch (Exception e){
+                throw new Exception(e);
+            }
+            return obj;
+        }
+    },
     Post{
         /**
          * @param obj {@link String}
@@ -35,20 +66,42 @@ public enum DB{
          * returns the <a style="color: #ff0000">error message</a> if failed!
          */
         @Override
-        public String execute(String obj){
-            try{
-                Document document = new Document("dado", obj).append("timestamp", System.currentTimeMillis());
-                collection.insertOne(document);
-                return "Completed";
-            }catch (Exception e){
-                return "Fail: "+e;
-            }
+        public @Nullable String execute(String obj){
+            return null;
+        }
+    },
+
+    PostT{
+        /**
+         * @param obj {@link String}
+         * @return returns <a style="color : #00ccff">null</a>  if success! <br>
+         * returns the <a style="color: #ff0000">error message</a> if failed!
+         */
+        @Override
+        public @Nullable String execute(String obj){
+            Timer a = new Timer(0, null);
+            a.start();
+
+            a.stop();
+            return a.toString();
         }
     },
     /**
      * Execute Request Method
      */
-    Request{
+    PostGetT{
+        /**
+         * @param obj {@link String}
+         * @return returns <a style="color : #00ccff">null</a>  if success! <br>
+         * returns the <a style="color: #ff0000">error message</a> if failed!
+         */
+        @Override
+        public @Nullable String execute(String obj){
+            return null;
+        }
+    },
+
+    PostGet{
         /**
          * @param obj {@link String}
          * @return returns <a style="color : #00ccff">null</a>  if success! <br>
@@ -74,17 +127,16 @@ public enum DB{
         }
     },
 
-    Start{
+    Connect{
         @Override
-        public String execute(String obj) {
+        public Object execute(String obj) throws Exception {
             try (MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017")) {
-                this.mongoClient = mongoClient;
-                this.database = this.mongoClient.getDatabase("projeto");
-                collection = this.database.getCollection("sensor");
-                return "Completed";
+                MongoDatabase database = mongoClient.getDatabase("projeto");
+                collection = database.getCollection("sensor");
             } catch (Exception e) {
-                return "Fail: "+e;
+                throw new Exception(e);
             }
+            return "";
         }
     };
 
@@ -93,9 +145,7 @@ public enum DB{
      * @param obj {@link String}
      * @return the requested object
      */
-    public String execute(@Nullable String obj){
-        return obj;
-    };
+    public abstract Object execute(@Nullable String obj) throws Exception;
 
     /**
      * @param obj {@link String}
@@ -109,7 +159,5 @@ public enum DB{
         }
         return false;
     };
-    MongoCollection<Document> collection;
-    MongoDatabase database;
-    MongoClient mongoClient;
+    private static MongoCollection<Document> collection;
 }

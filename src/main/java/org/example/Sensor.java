@@ -35,7 +35,11 @@ public class Sensor implements Serializable {
     private static void TryDB(String command){
         var cmd = command.replace("DB ", "");
         if(DB.exists(cmd)){
-            DB.valueOf(cmd.split(" ")[0]).execute(command.replace("DB ", ""));
+            try {
+                DB.valueOf(cmd.split(" ")[0]).execute(command.replace("DB ", ""));
+            }catch (Exception ex){
+                System.out.println(ex.getMessage());
+            }
         }else{
             System.err.println("Command not found:" + command);
         }
