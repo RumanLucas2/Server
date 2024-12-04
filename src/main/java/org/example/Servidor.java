@@ -1,11 +1,6 @@
 package org.example;
 
-import jdk.jshell.Snippet;
-
-import java.awt.desktop.AppEvent;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.concurrent.CompletableFuture;
 
 
 public class Servidor {
@@ -79,7 +74,6 @@ public class Servidor {
     private static void command(String cmd, Parceiro usr){
         try{
             usr.envie(cmd);
-            System.out.println(usr.receba());
         }catch (Exception e){
             System.err.println("Dado nao enviado");
         }
