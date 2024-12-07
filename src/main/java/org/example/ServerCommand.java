@@ -1,17 +1,13 @@
 package org.example;
 
 import com.mongodb.lang.Nullable;
-import com.sun.source.util.TaskEvent;
-import jdk.jfr.Unsigned;
-
-import java.util.concurrent.CompletableFuture;
 
 public enum ServerCommand {
 
     //Normal commands
     End{
         @Override
-        public boolean execute(){
+        public Object execute(){
             try{
                 Servidor.Terminate();
                 return true;
@@ -22,7 +18,7 @@ public enum ServerCommand {
     },
     Start{
         @Override
-        public boolean execute() {
+        public Object execute() {
             try{
                 Servidor.Start();
                 return true;
@@ -34,34 +30,48 @@ public enum ServerCommand {
 
     Status{
         @Override
-        public boolean execute(){
+        public Object execute(){
             try{
                 Commands.add("status");
-                return true;
+                return "Online";
             }catch (Exception e){
                 System.err.println(e.getMessage());
-                return false;
+                return e.getMessage();
 
             }
         }
     },
     List{
         @Override
-        public boolean execute(){
+        public Object execute(){
             try{
-                Commands.add("list");
-                return true;
+                StringBuilder response = new StringBuilder();
+                for (var cmd: ServerCommand.values()){
+                    response.append(cmd.name()).append("\n");
+                }
+
+                return response.toString();
             }catch (Exception e){
                 System.err.println(e.getMessage());
-                return false;
+                return null;
 
             }
         }
     };
 
-    public void execute(@Nullable String obj){
+    public Object execute(@Nullable String obj){
         if (obj == null)execute();
+        return null;
     }
-    public abstract boolean execute();
+    public abstract Object execute();
+
+    public static boolean exists(String obj){
+        for(ServerCommand cmd : ServerCommand.values()){
+            if (obj.equals(cmd.toString())){
+                return true;
+            }
+        }
+        return false;
+    };
 }
 

@@ -24,7 +24,7 @@ public enum DB{
          */
         @Override
         public @Nullable String execute(String obj){
-            return null;
+            return obj;
         }
     },
 

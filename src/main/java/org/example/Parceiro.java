@@ -1,7 +1,5 @@
 package org.example;
 
-import com.mongodb.lang.Nullable;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -23,7 +21,7 @@ public class Parceiro {
     public boolean IsReceiverOnly(){
         return ReceiverOnly;
     }
-    public Parceiro(Socket conexao, @Nullable ObjectInputStream receptor, @Nullable ObjectOutputStream transmissor) throws Exception {
+    public Parceiro(Socket conexao, ObjectInputStream receptor, ObjectOutputStream transmissor) throws Exception {
         if (conexao == null)
             throw new Exception("Conexao ausente");
         this.conexao = conexao;
@@ -31,17 +29,17 @@ public class Parceiro {
         if (! (transmissor == null)){
             this.transmissor = transmissor;
         }else {
-            System.err.println("Receptor Ausente, inicializando como Transmissor");
+            System.err.println("Transmissor Ausente");
             this.transmissor = null;
-            SenderOnly = true;
+            throw new Exception("Bad end, transmission failed");
         }
 
         if (! (receptor == null)){
             this.receptor = receptor;
         }else {
-            System.err.println("Receptor Ausente, inicializando como Transmissor");
+            System.err.println("Receptor Ausente");
             this.receptor = null;
-            ReceiverOnly = true;
+            throw new Exception("Bad end, receptor failed");
         }
     }
 

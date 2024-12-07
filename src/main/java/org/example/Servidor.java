@@ -22,6 +22,11 @@ public class Servidor {
         return Args;
     }
 
+
+    /**
+     *Inicializa a função {@link Servidor main } do servidor
+     * @param args
+     */
     public static void main(String[] args) {
         // Inicializa algo de forma assíncrona
         Porta = "8080";
@@ -40,6 +45,11 @@ public class Servidor {
             }
         }
     }
+
+    /**
+     *
+     *
+     */
     public static void Start(){
         if(!Servidor.usuarios.isEmpty()){
             Servidor.usuarios = new ArrayList<>();

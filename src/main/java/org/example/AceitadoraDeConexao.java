@@ -8,6 +8,13 @@ public class AceitadoraDeConexao extends Thread {
     private ServerSocket pedido = new ServerSocket();
     private final ArrayList<Parceiro> usuarios;
 
+
+    /**
+     *
+     * @param porta
+     * @param usuarios
+     * @throws Exception
+     */
     public AceitadoraDeConexao(String porta, ArrayList<Parceiro> usuarios) throws Exception {
         if (porta == null)
             throw new Exception("Porta ausente");
@@ -22,6 +29,10 @@ public class AceitadoraDeConexao extends Thread {
             throw new Exception("Usuarios ausentes");
         this.usuarios = usuarios;
     }
+
+    /**
+     * Pode ser chamado pelo Start
+     */
     @Override
     public void run() {
         System.out.println("Tentando conexao");

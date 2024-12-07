@@ -1,14 +1,8 @@
 package org.example;
 
-import com.sun.source.util.TaskEvent;
-import com.sun.source.util.TaskListener;
-
-import java.io.File;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.StandardSocketOptions;
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
 
@@ -25,6 +19,7 @@ public class SupervisoraDeConexao extends Thread {
         Commands.add(value);
     }
 
+
     public SupervisoraDeConexao(Socket conexao, ArrayList<Parceiro> usuarios) throws Exception {
         if (conexao == null) throw new Exception("Conexao ausente");
 
@@ -34,27 +29,31 @@ public class SupervisoraDeConexao extends Thread {
         this.usuarios = usuarios;
     }
 
+    /**
+     * Pode ser chamada pelo Start()
+     */
     @Override
     public void run() {
 
         ObjectOutputStream transmissor;
         try {
-            transmissor = new ObjectOutputStream(this.conexao.getOutputStream());
+            transmissor = new ObjectOutputStream(this.conexao.getOutputStream());// manda pela porta
         } catch (Exception erro) {
             return;
         }
 
-        ObjectInputStream receptor = null;
+        ObjectInputStream receptor;
         try {
-            receptor = new ObjectInputStream(this.conexao.getInputStream());
+            receptor = new ObjectInputStream(this.conexao.getInputStream()); // recebe pela porta
         } catch (Exception err0) {
             try {
                 transmissor.close();
             } catch (Exception falha) {
                 System.err.println("Falha total Transmissor");
+                throw new RuntimeException(falha);
             }
+            throw new RuntimeException(err0);
         }
-        assert receptor != null;
         try {
             this.usuario = new Parceiro(this.conexao, receptor, transmissor);
         } catch (Exception erro) {
@@ -65,12 +64,14 @@ public class SupervisoraDeConexao extends Thread {
                 this.usuarios.add(this.usuario);
             }
             System.out.println("System started");
+
             for (; ; ) {
                 if (!Commands.getCommands().isEmpty()) {
                     String cmd = Commands.getTop();
                     Commands.remove(0);
                     if (cmd.equals("end")) return;
                     Servidor.send(cmd, this.usuario);
+                    CompletableFuture.runAsync(this::portReceptor);
                 }
                 new Sensor();
             }
@@ -81,6 +82,14 @@ public class SupervisoraDeConexao extends Thread {
             } catch (Exception falha) {
                 throw new RuntimeException(falha);
             }
+        }
+    }
+
+    private void portReceptor() {
+        try {
+            System.out.println("\nServer Response: { "+ this.usuario.receba()+"}");
+        }catch (Exception ex){
+            System.out.println("\nServer Bad Response: "+ ex);
         }
     }
 }
