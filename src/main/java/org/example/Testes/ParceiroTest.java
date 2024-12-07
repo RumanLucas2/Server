@@ -1,13 +1,15 @@
 package org.example.Testes;
 
 import org.example.Parceiro;
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-import static org.junit.Assert.*;
+import static org.testng.Assert.*;
+
+
 
 public class ParceiroTest {
 
