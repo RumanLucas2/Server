@@ -34,6 +34,7 @@ public class Servidor {
         Start();
     }
 
+
     public static void Terminate(){
         for (Parceiro usuario : usuarios) {
             try {
@@ -71,21 +72,5 @@ public class Servidor {
         assert aceitadoraDeConexao != null;
         aceitadoraDeConexao.start();
         System.out.println("Server Started");
-    }
-
-    public static void send(String cmd, Parceiro usr){
-        try {
-            command(cmd, usr);
-        } catch (Exception e) {
-            System.err.println("Erro aqui");
-        }
-    }
-
-    private static void command(String cmd, Parceiro usr){
-        try{
-            usr.envie(cmd);
-        }catch (Exception e){
-            System.err.println("Dado nao enviado");
-        }
     }
 }

@@ -1,7 +1,11 @@
 package org.example;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.concurrent.CompletableFuture;
 
 
 public class Cliente {
@@ -52,42 +56,39 @@ public class Cliente {
         }
         try {
             while (conexao.isConnected()) {
-                String command = servidor.receba();
-
-                if (command.equals("status")) {
-                    servidor.envie("Online");} else {
-                    TryServer(command);
-                    TryDB(command);
+                if (!Commands.getCommands().isEmpty()) {
+                    String cmd = Commands.getTop();
+                    Commands.remove(0);
+                    if (cmd.equals("end")) return;
+                    send(cmd, servidor);
+                    CompletableFuture.runAsync(() ->
+                    {
+                        try {
+                            System.out.println("\nServer Response: { "+ servidor.receba()+"}");
+                        }catch (Exception ex){
+                            System.out.println("\nServer Bad Response: "+ ex);
+                        }
+                    });
                 }
-            }
-        } catch (Exception erro) {
+                Commands.add(Teclado.getUmString());
+        }
+    } catch (Exception erro) {
             System.err.println(erro.getMessage());
         }
     }
-
-    private static void TryServer(String command){
-        String cmd = command.replace("Server ", "");
-        try{
-            String response = ServerCommand.valueOf(cmd).execute().toString();
-            System.out.println(response);
-            servidor.envie(response+" ");
-        }catch(Exception e) {
-            System.out.println("Server command not valid: " +cmd);
+    public static void send(String cmd, Parceiro usr){
+        try {
+            command(cmd, usr);
+        } catch (Exception e) {
+            System.err.println("Erro aqui");
         }
     }
 
-    private static void TryDB(String cmd){
-        if(DB.exists(cmd.split(" ")[0].trim())){
-            try {
-                String response = DB.valueOf(cmd.split(" ")[0]).execute(cmd.replace(cmd.split(" ")[0], "")).toString();
-                response = response.trim();
-                System.out.println(response);
-                servidor.envie(response+" ");
-            }catch (Exception ex){
-                System.out.println(ex.getMessage());
-            }
-        }else{
-            System.err.println("DataBase command not valid: " +cmd);
+    private static void command(String cmd, Parceiro usr){
+        try{
+            usr.envie(cmd);
+        }catch (Exception e){
+            System.err.println("Dado nao enviado");
         }
     }
 }

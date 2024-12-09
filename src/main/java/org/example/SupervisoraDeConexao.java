@@ -4,7 +4,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.concurrent.CompletableFuture;
 
 
 public class SupervisoraDeConexao extends Thread {
@@ -66,14 +65,7 @@ public class SupervisoraDeConexao extends Thread {
             System.out.println("System started");
 
             for (; ; ) {
-                if (!Commands.getCommands().isEmpty()) {
-                    String cmd = Commands.getTop();
-                    Commands.remove(0);
-                    if (cmd.equals("end")) return;
-                    Servidor.send(cmd, this.usuario);
-                    CompletableFuture.runAsync(this::portReceptor);
-                }
-                new Sensor();
+                new Sensor(this.usuario);
             }
         } catch (Exception erro) {
             try {
@@ -82,14 +74,6 @@ public class SupervisoraDeConexao extends Thread {
             } catch (Exception falha) {
                 throw new RuntimeException(falha);
             }
-        }
-    }
-
-    private void portReceptor() {
-        try {
-            System.out.println("\nServer Response: { "+ this.usuario.receba()+"}");
-        }catch (Exception ex){
-            System.out.println("\nServer Bad Response: "+ ex);
         }
     }
 }
