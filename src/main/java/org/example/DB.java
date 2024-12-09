@@ -42,23 +42,23 @@ public enum DB{
     /**
      * Execute Post Method
      */
-    Insert{
+    //Insert{
         /**
          * @param obj {@link String}
          * @return returns <a style="color : #00ccff">null</a>  if success! <br>
          * returns the <a style="color: #ff0000">error message</a> if failed!
          */
-        @Override
-        public Object execute(String obj) throws Exception {
-            try{
-                Document document = new Document("dado", obj).append("timestamp", System.currentTimeMillis());
-                collection.insertOne(document);
-            }catch (Exception e){
-                throw new Exception(e);
-            }
-            return obj;
-        }
-    },
+//        @Override
+//        public Object execute(String obj) throws Exception {
+//            try{
+//                Document document = new Document("dado", obj).append("timestamp", System.currentTimeMillis());
+//                users.insertOne(document);
+//            }catch (Exception e){
+//                throw new Exception(e);
+//            }
+//            return obj;
+//        }
+    //},
     Post{
         /**
          * @param obj {@link String}
@@ -130,15 +130,31 @@ public enum DB{
     Connect{
         @Override
         public Object execute(String obj) throws Exception {
-            try (MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017")) {
-                MongoDatabase database = mongoClient.getDatabase("projeto");
-                collection = database.getCollection("sensor");
+            try (MongoClient mongoClient = MongoClients.create("mongodb+srv://leticia23205:controlegastos123@controlegastos.fpwju.mongodb.net/")) {
+                database = mongoClient.getDatabase("controle_gastos");
+                usuarios = database.getCollection("usuarios");
+                receitas = database.getCollection("receitas");
+                despesas = database.getCollection("despesas");
             } catch (Exception e) {
                 throw new Exception(e);
             }
             return "";
         }
-    };
+    },
+
+    fillRandom{
+        @Override
+        public Object execute(String obj) throws Exception {
+            try (MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017")) {
+                MongoDatabase database = mongoClient.getDatabase("projeto");
+                usuarios = database.getCollection("usuarios");
+            } catch (Exception e) {
+                throw new Exception(e);
+            }
+            return "";
+        }
+    }
+    ;
 
     /**
      *
@@ -159,5 +175,9 @@ public enum DB{
         }
         return false;
     };
-    private static MongoCollection<Document> collection;
+
+    public static  MongoDatabase database;
+    public static MongoCollection<Document> usuarios;
+    public static MongoCollection<Document> receitas;
+    public static MongoCollection<Document> despesas;
 }
