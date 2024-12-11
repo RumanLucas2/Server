@@ -1,7 +1,5 @@
 package org.example;
 
-import com.mongodb.lang.Nullable;
-
 public enum ServerCommand {
 
     //Normal commands
@@ -41,6 +39,27 @@ public enum ServerCommand {
             }
         }
     },
+
+    Disconnect {
+        @Override
+        public String execute(Object obj) throws Exception {
+            Parceiro usr = (Parceiro) obj;
+            try{
+                usr.Terminate();
+            }catch (Exception ex){
+                System.err.println("Erro ao finalizar objeto: "+ex);
+            }
+
+            Servidor.getUsers().remove(usr);
+            Servidor.Start();
+            return null;
+        }
+
+        @Override
+        public Object execute(){
+            throw new RuntimeException("Not valid");
+        }
+    },
     List{
         @Override
         public Object execute(){
@@ -59,13 +78,12 @@ public enum ServerCommand {
         }
     };
 
-    public Object execute(@Nullable String obj){
-        if (obj == null)execute();
-        return null;
-    }
     public abstract Object execute();
+    public Object execute(Object obj) throws Exception{
+        return null;
+    };
 
-    public static boolean exists(String obj){
+    public static boolean exists(Object obj){
         for(ServerCommand cmd : ServerCommand.values()){
             if (obj.equals(cmd.toString())){
                 return true;

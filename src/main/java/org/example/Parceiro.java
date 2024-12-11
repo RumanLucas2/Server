@@ -67,7 +67,7 @@ public class Parceiro {
     public void Terminate() throws Exception {
         try {
             this.transmissor.close();
-            if (!(this.receptor ==null))this.receptor.close();
+            this.receptor.close();
             this.conexao.close();
         } catch (Exception erro) {
             throw new Exception("Erro de desconexao");

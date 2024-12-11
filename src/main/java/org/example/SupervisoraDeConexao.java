@@ -12,13 +12,6 @@ public class SupervisoraDeConexao extends Thread {
     private final Socket conexao;
     private final ArrayList<Parceiro> usuarios;
 
-
-
-    public static void addCommands(String value){
-        Commands.add(value);
-    }
-
-
     public SupervisoraDeConexao(Socket conexao, ArrayList<Parceiro> usuarios) throws Exception {
         if (conexao == null) throw new Exception("Conexao ausente");
 
